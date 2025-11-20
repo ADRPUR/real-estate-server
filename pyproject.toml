@@ -27,13 +27,6 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
 ]
-
-[project.urls]
-Homepage = "https://github.com/ADRPUR/real-estate-server"
-Repository = "https://github.com/ADRPUR/real-estate-server"
-Documentation = "https://github.com/ADRPUR/real-estate-server#readme"
-"Bug Tracker" = "https://github.com/ADRPUR/real-estate-server/issues"
-Changelog = "https://github.com/ADRPUR/real-estate-server/blob/main/CHANGELOG.md"
 dependencies = [
     "fastapi>=0.100.0",
     "uvicorn[standard]>=0.23.0",
@@ -51,6 +44,13 @@ dependencies = [
     "colorlog>=6.7.0",
     "apscheduler>=3.10.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ADRPUR/real-estate-server"
+Repository = "https://github.com/ADRPUR/real-estate-server"
+Documentation = "https://github.com/ADRPUR/real-estate-server#readme"
+"Bug Tracker" = "https://github.com/ADRPUR/real-estate-server/issues"
+Changelog = "https://github.com/ADRPUR/real-estate-server/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
