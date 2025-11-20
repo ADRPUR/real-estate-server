@@ -295,8 +295,13 @@ async def market_insights():
     if cached_insights:
         return cached_insights
 
-    # Get listings
-    listings = get_detailed_proimobil_api_listings()
+    # Get listings from cache or fetch fresh
+    cached_listings_data = cache.get('proimobil_api_listings')
+    if cached_listings_data:
+        listings = cached_listings_data.get('listings', [])
+    else:
+        # Cache miss - fetch fresh
+        listings = get_detailed_proimobil_api_listings()
 
     if not listings:
         raise HTTPException(status_code=404, detail="No listings available for analysis")
@@ -326,10 +331,18 @@ async def property_score(listing_id: str):
     - Market comparison percentage
 
     Args:
-        listing_id: Property ID (url_slug) from proimobil API
+        listing_id: Property ID or url_slug from proimobil API
     """
-    # Get listings and insights
-    listings = get_detailed_proimobil_api_listings()
+    from app.services.cache import get_market_cache
+    cache = get_market_cache()
+
+    # Get listings from cache
+    cached_listings_data = cache.get('proimobil_api_listings')
+    if cached_listings_data:
+        listings = cached_listings_data.get('listings', [])
+    else:
+        # Cache miss - fetch fresh
+        listings = get_detailed_proimobil_api_listings()
 
     # Find the specific listing
     target_listing = None
@@ -402,7 +415,12 @@ async def predict_price(
         from app.services.market_analytics import MarketInsights
         insights = MarketInsights(**cached_insights)
     else:
-        listings = get_detailed_proimobil_api_listings()
+        # Get listings from cache
+        cached_listings_data = cache.get('proimobil_api_listings')
+        if cached_listings_data:
+            listings = cached_listings_data.get('listings', [])
+        else:
+            listings = get_detailed_proimobil_api_listings()
         insights = analyze_market(listings)
         cache.set('market_insights', asdict(insights), source='api_request')
 
@@ -428,11 +446,19 @@ async def find_similar(
     Returns similarity score (0-100) for each match.
 
     Args:
-        listing_id: Property ID (url_slug) from proimobil API
+        listing_id: Property ID or url_slug from proimobil API
         limit: Maximum number of results (default: 5)
     """
-    # Get all listings
-    listings = get_detailed_proimobil_api_listings()
+    from app.services.cache import get_market_cache
+    cache = get_market_cache()
+
+    # Get all listings from cache
+    cached_listings_data = cache.get('proimobil_api_listings')
+    if cached_listings_data:
+        listings = cached_listings_data.get('listings', [])
+    else:
+        # Cache miss - fetch fresh
+        listings = get_detailed_proimobil_api_listings()
 
     # Find target listing
     target_listing = None
@@ -478,8 +504,16 @@ async def best_deals(
     Args:
         limit: Number of results (default: 10)
     """
-    # Get listings and insights
-    listings = get_detailed_proimobil_api_listings()
+    from app.services.cache import get_market_cache
+    cache = get_market_cache()
+
+    # Get listings from cache
+    cached_listings_data = cache.get('proimobil_api_listings')
+    if cached_listings_data:
+        listings = cached_listings_data.get('listings', [])
+    else:
+        # Cache miss - fetch fresh
+        listings = get_detailed_proimobil_api_listings()
 
     if not listings:
         raise HTTPException(status_code=404, detail="No listings available")
