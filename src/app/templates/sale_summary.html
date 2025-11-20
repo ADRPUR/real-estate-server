@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="utf-8"/>
+    <title>Sale Summary</title>
+    <style>
+        @font-face { font-family: "NotoSans"; src: url("static/fonts/NotoSans-Regular.ttf") format("truetype"); }
+        @page { margin: 10mm 10mm 10mm 10mm; }
+        body { font-family: "NotoSans", sans-serif; font-size: 10.5px; color: #1f2937; background: linear-gradient(135deg, #fef3c7 0%, #dbeafe 100%); }
+        .container { background: white; padding: 8mm; border-radius: 4mm; box-shadow: 0 2mm 8mm rgba(0,0,0,0.1); }
+        h1 { font-size: 22px; font-weight: 700; text-align: center; margin: 0 0 2mm 0; padding: 4mm 0; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); color: white; border-radius: 3mm; box-shadow: 0 2mm 6mm rgba(245, 158, 11, 0.3); }
+        .small { font-size: 9px; text-align: center; margin-bottom: 4mm; color: #6b7280; }
+        .section { margin-top: 4mm; background: #f9fafb; padding: 3mm; border-radius: 2mm; }
+        .label { font-weight: 700; margin-bottom: 2mm; color: #1e40af; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3mm; }
+        .value { margin-bottom: 3mm; padding: 2mm; background: white; border-radius: 2mm; border-left: 2mm solid #3b82f6; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 2mm; padding: 2mm; background: white; border-radius: 2mm; border-left: 2mm solid #e5e7eb; }
+        .row-label { font-weight: 600; margin-right: 4mm; color: #374151; }
+        .row-value { min-width: 40mm; text-align: right; font-weight: 600; color: #1f2937; }
+        .currency-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm; margin: 2mm 0; }
+        .currency-box { padding: 2mm; border-radius: 2mm; text-align: center; }
+        .currency-eur { background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 1mm solid #3b82f6; }
+        .currency-mdl { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1mm solid #f59e0b; }
+        .currency-label { font-size: 8px; color: #6b7280; margin-bottom: 1mm; font-weight: 600; }
+        .currency-value { font-size: 11px; font-weight: 700; }
+        .highlight { font-weight: 700; color: #047857; }
+        .highlight-box { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; padding: 3mm; border-radius: 2mm; margin: 3mm 0; box-shadow: 0 2mm 6mm rgba(16, 185, 129, 0.3); }
+        .separator { margin: 3mm 0; border: none; border-top: 1mm dashed #cbd5e1; }
+        .separator-solid { margin: 4mm 0; border: none; border-top: 1mm solid #3b82f6; }
+        .badge { display: inline-block; padding: 1mm 3mm; border-radius: 2mm; font-size: 8px; font-weight: 600; margin-left: 2mm; }
+        .badge-success { background: #10b981; color: white; }
+        .badge-warning { background: #f59e0b; color: white; }
+        .badge-danger { background: #ef4444; color: white; }
+        .footer { font-size: 8px; color: #6b7280; text-align: center; margin-top: 8mm; padding-top: 3mm; border-top: 1mm solid #e5e7eb; font-style: italic; }
+        .card { background: white; padding: 3mm; margin: 2mm 0; border-radius: 2mm; box-shadow: 0 1mm 3mm rgba(0,0,0,0.05); }
+        .card-profit { border-left: 3mm solid #10b981; background: linear-gradient(to right, #f0fdf4, white); }
+        .card-cost { border-left: 3mm solid #ef4444; background: linear-gradient(to right, #fef2f2, white); }
+    </style>
+</head>
+<body>
+<div class="container">
+<h1>💰 Sale Summary Report</h1>
+<p class="small">Generat la: {{ generated_at }}</p>
+<div class="section"><div class="label">📍 Adresă apartament vândut</div><div class="value">{{ config.old_apartment.address or '-' }}</div></div>
+<div class="section">
+    <div class="label">💵 Detalii vânzare <span class="badge badge-success">FINALIZAT</span></div>
+    <div class="separator-solid"></div>
+    <div class="currency-pair">
+        <div class="currency-box currency-eur"><div class="currency-label">💶 VÂNZARE EUR</div><div class="currency-value" style="color:#1e40af">€ {{ "%.2f"|format(summary.sale_eur) }}</div></div>
+        <div class="currency-box currency-mdl"><div class="currency-label">💴 VÂNZARE MDL</div><div class="currency-value" style="color:#b45309">{{ "%.2f"|format(summary.sale_mdl) }} MDL</div></div>
+    </div>
+    {% if config.old_apartment.sale_date %}
+    <div class="card"><div class="row" style="border:none;background:transparent;padding:0"><div class="row-label">📅 Data vânzării</div><div class="row-value">{{ config.old_apartment.sale_date|fmt_date }}</div></div></div>
+    {% endif %}
+    <div class="separator"></div>
+    <div class="card card-cost">
+        <div style="font-weight:700;color:#dc2626;margin-bottom:2mm;font-size:10px">💸 COSTURI <span class="badge badge-danger">TAXE</span></div>
+        <div class="currency-pair">
+            <div class="currency-box currency-eur"><div class="currency-label">Comision agent EUR</div><div class="currency-value" style="color:#dc2626">€ {{ "%.2f"|format(summary.agent_fee_eur) }}</div></div>
+            <div class="currency-box currency-mdl"><div class="currency-label">Comision agent MDL</div><div class="currency-value" style="color:#dc2626">{{ "%.2f"|format(summary.agent_fee_mdl) }} MDL</div></div>
+        </div>
+        <div class="separator"></div>
+        <div class="currency-pair">
+            <div class="currency-box currency-eur"><div class="currency-label">Impozit venit EUR</div><div class="currency-value" style="color:#dc2626">€ {{ "%.2f"|format(summary.tax_eur) }}</div></div>
+            <div class="currency-box currency-mdl"><div class="currency-label">Impozit venit MDL</div><div class="currency-value" style="color:#dc2626">{{ "%.2f"|format(summary.tax_mdl) }} MDL</div></div>
+        </div>
+    </div>
+    <div class="separator-solid"></div>
+    <div class="card card-profit">
+        <div style="font-weight:700;color:#059669;margin-bottom:2mm;font-size:10px">📊 PROFIT BRUT</div>
+        <div class="currency-pair">
+            <div class="currency-box currency-eur"><div class="currency-label">Profit brut EUR</div><div class="currency-value" style="color:#059669">€ {{ "%.2f"|format(summary.gross_profit_eur) }}</div></div>
+            <div class="currency-box currency-mdl"><div class="currency-label">Profit brut MDL</div><div class="currency-value" style="color:#059669">{{ "%.2f"|format(summary.gross_profit_mdl) }} MDL</div></div>
+        </div>
+        <div class="separator"></div>
+        <div style="font-weight:700;color:#059669;margin:2mm 0;font-size:10px">💎 PROFIT NET (după agent + impozit)</div>
+        <div class="currency-pair">
+            <div class="currency-box currency-eur"><div class="currency-label">Profit net EUR</div><div class="currency-value" style="color:#059669">€ {{ "%.2f"|format(summary.net_profit_eur) }}</div></div>
+            <div class="currency-box currency-mdl"><div class="currency-label">Profit net MDL</div><div class="currency-value" style="color:#059669">{{ "%.2f"|format(summary.net_profit_mdl) }} MDL</div></div>
+        </div>
+    </div>
+    <div class="separator-solid"></div>
+    <div class="highlight-box">
+        <div style="font-weight:700;margin-bottom:2mm;font-size:12px;text-align:center">✅ VENIT NET TOTAL</div>
+        <div class="currency-pair">
+            <div style="text-align:center;padding:2mm"><div style="font-size:9px;margin-bottom:1mm;opacity:.9">EUR</div><div style="font-size:18px;font-weight:700">€ {{ "%.2f"|format(summary.net_income_eur) }}</div></div>
+            <div style="text-align:center;padding:2mm"><div style="font-size:9px;margin-bottom:1mm;opacity:.9">MDL</div><div style="font-size:18px;font-weight:700">{{ "%.2f"|format(summary.net_income_mdl) }} MDL</div></div>
+        </div>
+    </div>
+</div>
+<div class="footer">🏠 Rezumat de vânzare – valori aproximative, în funcție de parametrii din configurație<br/>(comision agent, impozit, curs valutar)</div>
+</div>
+</body>
+</html>

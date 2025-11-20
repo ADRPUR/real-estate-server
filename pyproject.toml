@@ -1,0 +1,119 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "real-estate"
+version = "0.1.0"
+description = "Real Estate Calculator API - Market analysis for Chisinau apartments"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Adrian", email = "apurice@gmail.com"}
+]
+maintainers = [
+    {name = "Adrian", email = "apurice@gmail.com"}
+]
+keywords = ["real-estate", "fastapi", "web-scraping", "market-analysis", "moldova"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+
+[project.urls]
+Homepage = "https://github.com/ADRPUR/real-estate-server"
+Repository = "https://github.com/ADRPUR/real-estate-server"
+Documentation = "https://github.com/ADRPUR/real-estate-server#readme"
+"Bug Tracker" = "https://github.com/ADRPUR/real-estate-server/issues"
+Changelog = "https://github.com/ADRPUR/real-estate-server/blob/main/CHANGELOG.md"
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.23.0",
+    "httpx>=0.24.0",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=4.9.0",
+    "xlrd>=2.0.0",
+    "python-multipart>=0.0.6",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "jinja2>=3.1.0",
+    "weasyprint>=59.0",
+    "playwright>=1.40.0",
+    "colorlog>=6.7.0",
+    "apscheduler>=3.10.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-anyio>=0.0.0",
+    "mypy>=1.5.0",
+    "ruff>=0.0.290",
+    "coverage-badge>=1.1.0",
+    "pre-commit>=3.5.0",
+    "bandit>=1.7.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["app*"]
+exclude = ["tests", "static", "templates"]
+
+[project.scripts]
+app-backend = "app.main:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "**/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501", "N802", "N803", "N806"]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+

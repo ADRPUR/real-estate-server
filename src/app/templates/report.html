@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="utf-8"/>
+    <title>Apartment Sale Report</title>
+    <style>
+        @font-face { font-family: "Onest"; src: url("static/fonts/Onest-Regular.ttf") format("truetype"); }
+        @page { margin: 10mm 10mm 10mm 10mm; }
+        body { font-family: "Onest", sans-serif; font-size: 10.5px; color: #1f2937; background: linear-gradient(135deg, #f0f9ff 0%, #fef3c7 100%); }
+        .container { background: white; padding: 8mm; border-radius: 4mm; box-shadow: 0 2mm 8mm rgba(0,0,0,0.1); }
+        h1 { margin: 0 0 2mm 0; padding: 4mm 0; font-size: 22px; font-weight: 700; text-align: center; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; border-radius: 3mm; box-shadow: 0 2mm 6mm rgba(59, 130, 246, 0.3); }
+        h2 { font-size: 14px; font-weight: 700; color: #1e40af; margin: 5mm 0 3mm 0; padding: 2mm 3mm; background: linear-gradient(to right, #dbeafe, #e0e7ff); border-left: 3mm solid #3b82f6; border-radius: 2mm; }
+        .badge { display: inline-block; padding: 1mm 3mm; border-radius: 2mm; font-size: 8px; font-weight: 600; margin-left: 2mm; }
+        .badge-primary { background: #3b82f6; color: white; }
+        .badge-success { background: #10b981; color: white; }
+        .badge-warning { background: #f59e0b; color: white; }
+        .section { margin-top: 3mm; padding: 3mm; background: #f9fafb; border-radius: 2mm; }
+        .card { background: white; padding: 3mm; margin: 2mm 0; border-radius: 2mm; border-left: 2mm solid #3b82f6; box-shadow: 0 1mm 3mm rgba(0,0,0,0.05); }
+        .card-success { border-left-color: #10b981; background: linear-gradient(to right, #f0fdf4, white); }
+        .card-warning { border-left-color: #f59e0b; background: linear-gradient(to right, #fffbeb, white); }
+        .row { display: flex; justify-content: space-between; margin-bottom: 2mm; padding: 1.5mm 0; }
+        .row-label { font-weight: 600; color: #374151; margin-right: 4mm; }
+        .row-value { text-align: right; min-width: 35mm; font-weight: 600; color: #1f2937; }
+        .row-extra { font-size: 8.5px; color: #6b7280; margin-top: 1mm; font-style: italic; border-bottom: 0.5mm dotted #e5e7eb; }
+        .multiline { margin-bottom: 3mm; padding: 2mm; background: white; border-radius: 2mm; }
+        .multiline-label { font-weight: 700; color: #1e40af; margin-bottom: 1mm; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.3mm; }
+        .footer { font-size: 8px; color: #6b7280; text-align: center; margin-top: 8mm; padding-top: 3mm; border-top: 1mm solid #e5e7eb; font-style: italic; }
+        .small { font-size: 9px; color: #6b7280; }
+        .highlight { font-weight: 700; color: #047857; font-size: 11px; }
+        .highlight-box { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; padding: 3mm; border-radius: 2mm; margin: 3mm 0; box-shadow: 0 2mm 6mm rgba(16, 185, 129, 0.3); }
+        .price-tag { font-size: 16px; font-weight: 700; color: #059669; }
+        .info-box { background: #eff6ff; border: 1mm solid #3b82f6; padding: 2mm 3mm; border-radius: 2mm; margin: 2mm 0; font-size: 9px; }
+        .rates-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2mm; margin: 2mm 0; }
+        .rate-box { background: white; padding: 2mm; border-radius: 2mm; text-align: center; border: 0.5mm solid #e5e7eb; }
+        .rate-label { font-size: 8px; color: #6b7280; margin-bottom: 1mm; }
+        .rate-value { font-size: 10px; font-weight: 700; color: #1f2937; }
+    </style>
+</head>
+<body>
+<div class="container">
+<h1>📊 Apartment Sale Report</h1>
+<p style="text-align:center" class="small">Generat la: {{ generated_at }}</p>
+<h2>🏢 1. New Apartment – Target <span class="badge badge-primary">ȚINTĂ</span></h2>
+<div class="section">
+    <div class="multiline"><div class="multiline-label">📍 Adresa apartament nou</div><div>{{ config.new_apartment.address or '-' }}</div></div>
+    <div class="card">
+        <div class="row"><div class="row-label">💶 Preț apartament</div><div class="row-value">€ {{ "%.2f"|format(config.new_apartment.price_apartment or 0) }}</div></div>
+        <div class="row"><div class="row-label">🅿️ Preț parcare</div><div class="row-value">€ {{ "%.2f"|format(config.new_apartment.price_parking or 0) }}</div></div>
+        <div class="row"><div class="row-label">📝 Taxă notarială {% if config.notary_tax and config.notary_tax.percentage is not none %}<span class="badge badge-warning">{{ "%.2f"|format(config.notary_tax.percentage) }}%</span>{% endif %}</div><div class="row-value">€ {{ "%.2f"|format(r.notaryTax or 0) }}</div></div>
+    </div>
+    <div class="highlight-box">
+        <div class="row" style="border:none;margin:0"><div class="row-label" style="color:white">✅ Total de plătit (ap. + parcare + notar)</div><div class="row-value price-tag" style="color:white">€ {{ "%.2f"|format(r.targetWithNotary or 0) }}</div></div>
+    </div>
+</div>
+<h2>🏠 2. Old Apartment – Sale Details <span class="badge badge-success">VÂNZARE</span></h2>
+<div class="section">
+    <div class="multiline"><div class="multiline-label">📍 Adresa apartament vechi</div><div>{{ config.old_apartment.address or '-' }}</div></div>
+    <div class="card">
+        <div class="row"><div class="row-label">💰 Preț de achiziție inițial</div><div class="row-value">€ {{ "%.2f"|format(config.old_apartment.purchase_price or 0) }}</div></div>
+        <div class="row"><div class="row-label">📐 Suprafață utilă</div><div class="row-value">{{ "%.2f"|format(config.old_apartment.surface_area_sqm or 0) }} m²</div></div>
+        <div class="row"><div class="row-label">📈 Preț piață €/m²</div><div class="row-value" style="font-size:9px"><span style="color:#dc2626">min: € {{ "%.2f"|format(config.old_apartment.market_price_per_sqm_min or 0) }}</span><br/><span style="color:#3b82f6">avg: € {{ "%.2f"|format(config.old_apartment.market_price_per_sqm_avg or 0) }}</span><br/><span style="color:#059669">max: € {{ "%.2f"|format(config.old_apartment.market_price_per_sqm_max or 0) }}</span></div></div>
+    </div>
+    <div class="card card-success">
+        <div class="row"><div class="row-label">🎯 Preț minim de vânzare</div><div class="row-value price-tag" style="font-size:14px">€ {{ "%.2f"|format(r.salePrice or 0) }}</div></div>
+        <div class="row"><div class="row-label">📊 Profit brut</div><div class="row-value highlight">€ {{ "%.2f"|format(r.profit or 0) }}</div></div>
+    </div>
+    <div class="info-box">💡 <strong>Recomandare:</strong> preț de listare ~ <strong>€ {{ "%.2f"|format((r.salePrice or 0) * 1.05) }}</strong> (preț minim + 5% marjă de negociere).</div>
+</div>
+<h2>💱 3. Exchange Rates & Costs <span class="badge badge-warning">TAXE</span></h2>
+<div class="section">
+    <div class="multiline-label">📈 Rate de schimb valutar</div>
+    <div class="rates-grid">
+        <div class="rate-box"><div class="rate-label">EUR → MDL</div><div class="rate-value" style="color:#3b82f6">{{ "%.4f"|format(config.exchange_rates.eur_to_mdl or 0) }}</div></div>
+        <div class="rate-box"><div class="rate-label">EUR → RON</div><div class="rate-value" style="color:#8b5cf6">{{ "%.4f"|format(config.exchange_rates.eur_to_ron or 0) }}</div></div>
+        <div class="rate-box"><div class="rate-label">RON → MDL</div><div class="rate-value" style="color:#10b981">{{ "%.4f"|format(config.exchange_rates.ron_to_mdl or 0) }}</div></div>
+    </div>
+    <div class="card card-warning">
+        <div class="row"><div class="row-label">🧾 Comision agent</div><div class="row-value" style="color:#f59e0b;font-size:12px">€ {{ "%.2f"|format(r.agentFee or 0) }}</div></div><div class="row-extra">Rată agent: {{ "%.2f"|format(config.agent_fee.percentage or 0) }}%</div>
+        <div class="row"><div class="row-label">🏦 Impozit venit</div><div class="row-value" style="color:#f59e0b;font-size:12px">€ {{ "%.2f"|format(r.tax or 0) }}</div></div><div class="row-extra">Rată impozit: {{ "%.2f"|format(config.income_tax.rate or 0) }}%</div>
+        <div class="row"><div class="row-label">🏘️ Chirie pierdută</div><div class="row-value" style="color:#f59e0b;font-size:12px">€ {{ "%.2f"|format(r.lostRental or 0) }}</div></div><div class="row-extra">{{ config.rental_income.months_lost or 0 }} luni × {{ "%.2f"|format(config.rental_income.monthly_amount or 0) }} €/lună</div>
+        <div class="row"><div class="row-label">🔄 Cost conversie valutară</div><div class="row-value" style="color:#f59e0b;font-size:12px">€ {{ "%.2f"|format(r.convCost or 0) }}</div></div><div class="row-extra">Rată efectivă conversie: {{ "%.4f"|format(r.conversionPct or 0) }}%</div>
+    </div>
+</div>
+<h2>✅ 4. Verification & Summary <span class="badge badge-success">REZULTATE</span></h2>
+<div class="section">
+    <div class="card">
+        <div class="row"><div class="row-label">💶 Preț vânzare (EUR)</div><div class="row-value" style="color:#3b82f6;font-size:12px">€ {{ "%.2f"|format(r.salePrice or 0) }}</div></div>
+        <div class="row"><div class="row-label">📥 Net înainte de conversie</div><div class="row-value">€ {{ "%.2f"|format(r.netBeforeConv or 0) }}</div></div>
+        <div class="row"><div class="row-label">📤 Net după conversie</div><div class="row-value">€ {{ "%.2f"|format(r.net or 0) }}</div></div>
+        <div class="row"><div class="row-label">🎯 Țintă (apartament nou + notar)</div><div class="row-value">€ {{ "%.2f"|format(r.targetWithNotary or 0) }}</div></div>
+    </div>
+    <div class="highlight-box">
+        <div class="row" style="border:none;margin-bottom:2mm"><div class="row-label" style="color:white">📊 Acoperire țintă</div><div class="row-value price-tag" style="color:white">{{ "%.2f"|format(r.coverPct or 0) }} %</div></div>
+        <div class="row" style="border:none;margin:0"><div class="row-label" style="color:white">💎 Randament investiție</div><div class="row-value price-tag" style="color:white">{{ "%.2f"|format(r.invReturnPct or 0) }} %</div></div>
+    </div>
+</div>
+<div class="footer">🏡 Generat cu <strong>Apartment Calculator</strong> – raport orientativ, nu reprezintă consultanță financiară.</div>
+</div>
+</body>
+</html>

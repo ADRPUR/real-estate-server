@@ -1,0 +1,18 @@
+fastapi
+uvicorn
+weasyprint
+requests
+beautifulsoup4
+xlrd
+pydantic
+pydantic-settings
+python-dotenv
+colorlog
+jinja2
+pytest
+httpx
+pytest-cov
+coverage-badge
+selenium  # For 999.md dynamic scraping (optional)
+webdriver-manager  # Auto-manages Chrome driver for Selenium (optional)
+apscheduler  # Background task scheduling for cache refresh
