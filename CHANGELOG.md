@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed pyproject.toml structure for proper dependency management
+- Configured GitHub Actions permissions
+
 ### Added
 - Initial project setup with FastAPI
 - Multi-source market data scraping (Proimobil, Accesimobil, 999.md)

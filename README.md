@@ -9,6 +9,7 @@
 
 A comprehensive real estate market analysis API for Chisinau, Moldova. Aggregates and analyzes apartment listings from multiple sources (Proimobil, Accesimobil, 999.md) with advanced statistical analysis, PDF report generation, and real-time exchange rates.
 
+
 ## ✨ Features
 
 - 📊 **Multi-Source Market Data**: Aggregates listings from 3 major real estate platforms
