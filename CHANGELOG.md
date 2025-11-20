@@ -14,6 +14,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial project setup with FastAPI
+- **Advanced Market Analytics** - 6 new analytics endpoints:
+  - `/market/analytics/insights` - Comprehensive market insights (sector analysis, price distribution, trends)
+  - `/market/analytics/property-score/{id}` - Investment scoring for properties (0-100 scale)
+  - `/market/analytics/predict-price` - ML-like price predictions based on characteristics
+  - `/market/analytics/similar/{id}` - Find similar properties for comparison
+  - `/market/analytics/best-deals` - Top undervalued properties on market
+  - Complete sector-by-sector analysis with volume and price metrics
+- Property investment scoring system (price, location, size scores)
+- Price prediction engine with confidence intervals
+- Similarity matching algorithm for property comparison
+- Market segmentation (underpriced/overpriced/fair pricing)
+- Best value sectors identification
+- Emerging areas detection
 - Multi-source market data scraping (Proimobil, Accesimobil, 999.md)
 - Statistical analysis with quartiles and outlier detection
 - Price distribution histograms

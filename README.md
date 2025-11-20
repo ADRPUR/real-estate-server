@@ -14,6 +14,13 @@ A comprehensive real estate market analysis API for Chisinau, Moldova. Aggregate
 
 - 📊 **Multi-Source Market Data**: Aggregates listings from 3 major real estate platforms
 - 📈 **Statistical Analysis**: Quartile analysis, outlier detection, price distributions
+- 🧠 **Advanced Analytics** 🆕: 
+  - Investment scoring for properties (price, location, size analysis)
+  - ML-like price predictions with confidence intervals
+  - Sector-by-sector market insights
+  - Similar property matching
+  - Best deals identification
+  - Market segmentation (underpriced/overpriced detection)
 - 💱 **Exchange Rates**: Real-time EUR/MDL and USD/MDL rates from BNM
 - 📄 **PDF Reports**: Generate professional property evaluation reports
 - 🚀 **High Performance**: Async operations with intelligent caching (30min TTL)
@@ -130,6 +137,16 @@ python main.py
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/pdf/generate` | POST | Generate PDF evaluation report |
+
+### Market Analytics 🆕
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/market/analytics/insights` | GET | Comprehensive market insights and sector analysis |
+| `/market/analytics/property-score/{id}` | GET | Investment score for a property (0-100 scale) |
+| `/market/analytics/predict-price` | GET | Predict price based on surface, rooms, sector |
+| `/market/analytics/similar/{id}` | GET | Find similar properties for comparison |
+| `/market/analytics/best-deals` | GET | Top undervalued properties on market |
 
 ### Cache Management
 
