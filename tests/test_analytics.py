@@ -3,6 +3,13 @@ Tests for market analytics endpoints.
 """
 import pytest
 from fastapi.testclient import TestClient
+from app.main import app
+
+
+@pytest.fixture
+def client():
+    """Create test client."""
+    return TestClient(app)
 
 
 def test_market_insights_endpoint(client: TestClient):
