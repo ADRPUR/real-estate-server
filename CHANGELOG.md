@@ -8,8 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- Fixed pyproject.toml structure for proper dependency management
+- Fixed pyproject.toml structure for proper dependency management (GitHub Actions compatibility)
 - Configured GitHub Actions permissions
+- Setup Codecov for coverage tracking
 
 ### Added
 - Initial project setup with FastAPI
