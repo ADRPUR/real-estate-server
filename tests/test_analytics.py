@@ -8,8 +8,11 @@ from app.main import app
 
 @pytest.fixture
 def client():
-    """Create test client."""
-    return TestClient(app)
+    """Create test client and clear cache."""
+    client = TestClient(app)
+    # Clear cache before analytics tests
+    client.post("/cache/clear")
+    return client
 
 
 def test_market_insights_endpoint(client: TestClient):
@@ -140,30 +143,37 @@ def test_property_score_endpoint(client: TestClient):
     assert listings_response.status_code == 200
     
     listings_data = listings_response.json()
-    if listings_data["listings"]:
-        listing_id = listings_data["listings"][0].get("url_slug") or listings_data["listings"][0].get("id")
-        
-        # Get score for this listing
-        response = client.get(f"/market/analytics/property-score/{listing_id}")
-        assert response.status_code == 200
-        
-        data = response.json()
-        
-        # Check structure
-        assert "overall_score" in data
-        assert "price_score" in data
-        assert "location_score" in data
-        assert "size_score" in data
-        assert "value_assessment" in data
-        assert "predicted_price_range" in data
-        assert "vs_market_percentage" in data
-        assert "listing_details" in data
-        
-        # Check value assessment is valid
-        assert data["value_assessment"] in ["excellent", "good", "fair", "poor"]
-        
-        # Check scores are in range
-        assert 0 <= data["overall_score"] <= 100
+    if not listings_data["listings"]:
+        pytest.skip("No listings available for testing")
+
+    # Use ID first, fallback to url_slug
+    listing = listings_data["listings"][0]
+    listing_id = listing.get("id") or listing.get("url_slug")
+
+    if not listing_id:
+        pytest.skip("No valid ID found in listing")
+
+    # Get score for this listing
+    response = client.get(f"/market/analytics/property-score/{listing_id}")
+    assert response.status_code == 200
+
+    data = response.json()
+
+    # Check structure
+    assert "overall_score" in data
+    assert "price_score" in data
+    assert "location_score" in data
+    assert "size_score" in data
+    assert "value_assessment" in data
+    assert "predicted_price_range" in data
+    assert "vs_market_percentage" in data
+    assert "listing_details" in data
+
+    # Check value assessment is valid
+    assert data["value_assessment"] in ["excellent", "good", "fair", "poor"]
+
+    # Check scores are in range
+    assert 0 <= data["overall_score"] <= 100
 
 
 def test_property_score_not_found(client: TestClient):
@@ -179,13 +189,20 @@ def test_similar_properties_endpoint(client: TestClient):
     assert listings_response.status_code == 200
     
     listings_data = listings_response.json()
-    if listings_data["listings"]:
-        listing_id = listings_data["listings"][0].get("url_slug") or listings_data["listings"][0].get("id")
-        
-        # Find similar properties
-        response = client.get(f"/market/analytics/similar/{listing_id}")
-        assert response.status_code == 200
-        
+    if not listings_data["listings"]:
+        pytest.skip("No listings available for testing")
+
+    # Use ID first, fallback to url_slug
+    listing = listings_data["listings"][0]
+    listing_id = listing.get("id") or listing.get("url_slug")
+
+    if not listing_id:
+        pytest.skip("No valid ID found in listing")
+
+    # Find similar properties
+    response = client.get(f"/market/analytics/similar/{listing_id}")
+    assert response.status_code == 200
+
         data = response.json()
         
         # Check structure
@@ -211,14 +228,21 @@ def test_similar_properties_with_limit(client: TestClient):
     listings_response = client.get("/market/proimobil-api/listings")
     listings_data = listings_response.json()
     
-    if listings_data["listings"]:
-        listing_id = listings_data["listings"][0].get("url_slug") or listings_data["listings"][0].get("id")
-        
-        response = client.get(f"/market/analytics/similar/{listing_id}?limit=3")
-        assert response.status_code == 200
-        
-        data = response.json()
-        assert len(data["similar_properties"]) <= 3
+    if not listings_data["listings"]:
+        pytest.skip("No listings available for testing")
+
+    # Use ID first, fallback to url_slug
+    listing = listings_data["listings"][0]
+    listing_id = listing.get("id") or listing.get("url_slug")
+
+    if not listing_id:
+        pytest.skip("No valid ID found in listing")
+
+    response = client.get(f"/market/analytics/similar/{listing_id}?limit=3")
+    assert response.status_code == 200
+
+    data = response.json()
+    assert len(data["similar_properties"]) <= 3
 
 
 def test_similar_properties_not_found(client: TestClient):
@@ -237,8 +261,19 @@ def test_analytics_caching(client: TestClient):
     response2 = client.get("/market/analytics/insights")
     assert response2.status_code == 200
     
-    # Data should be identical
-    assert response1.json() == response2.json()
+    # Data should be identical except for cache_info age_seconds
+    data1 = response1.json()
+    data2 = response2.json()
+
+    # Remove cache_info before comparison (age_seconds will differ)
+    data1_no_cache = {k: v for k, v in data1.items() if k != 'cache_info'}
+    data2_no_cache = {k: v for k, v in data2.items() if k != 'cache_info'}
+
+    assert data1_no_cache == data2_no_cache
+
+    # But both should have cache_info
+    if 'cache_info' in data1:
+        assert 'cache_info' in data2
 
 
 def test_sector_stats_structure(client: TestClient):
