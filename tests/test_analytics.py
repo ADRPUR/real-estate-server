@@ -19,9 +19,9 @@ def test_market_insights_endpoint(client: TestClient):
     """Test market insights endpoint."""
     response = client.get("/market/analytics/insights")
     assert response.status_code == 200
-    
+
     data = response.json()
-    
+
     # Check structure
     assert "total_listings" in data
     assert "average_price_eur" in data
@@ -35,7 +35,7 @@ def test_market_insights_endpoint(client: TestClient):
     assert "overpriced_count" in data
     assert "premium_features" in data
     assert "best_value_sectors" in data
-    
+
     # Check types
     assert isinstance(data["total_listings"], int)
     assert isinstance(data["average_price_eur"], (int, float))
@@ -48,21 +48,21 @@ def test_predict_price_endpoint(client: TestClient):
     """Test price prediction endpoint."""
     response = client.get("/market/analytics/predict-price?surface=55&rooms=2")
     assert response.status_code == 200
-    
+
     data = response.json()
-    
+
     # Check structure
     assert "predicted_price_eur" in data
     assert "predicted_price_per_sqm" in data
     assert "confidence_interval" in data
     assert "inputs" in data
     assert "market_comparison" in data
-    
+
     # Check confidence interval structure
     assert "min" in data["confidence_interval"]
     assert "max" in data["confidence_interval"]
     assert "confidence" in data["confidence_interval"]
-    
+
     # Check values are reasonable
     assert data["predicted_price_eur"] > 0
     assert data["predicted_price_per_sqm"] > 0
@@ -74,7 +74,7 @@ def test_predict_price_with_sector(client: TestClient):
     """Test price prediction with sector parameter."""
     response = client.get("/market/analytics/predict-price?surface=55&rooms=2&sector=Botanica")
     assert response.status_code == 200
-    
+
     data = response.json()
     assert data["inputs"]["sector"] == "Botanica"
 
@@ -84,11 +84,11 @@ def test_predict_price_validation(client: TestClient):
     # Missing parameters
     response = client.get("/market/analytics/predict-price")
     assert response.status_code == 422
-    
+
     # Invalid surface (negative)
     response = client.get("/market/analytics/predict-price?surface=-10&rooms=2")
     assert response.status_code == 422
-    
+
     # Invalid rooms (too many)
     response = client.get("/market/analytics/predict-price?surface=55&rooms=100")
     assert response.status_code == 422
@@ -98,21 +98,21 @@ def test_best_deals_endpoint(client: TestClient):
     """Test best deals endpoint."""
     response = client.get("/market/analytics/best-deals")
     assert response.status_code == 200
-    
+
     data = response.json()
-    
+
     # Check structure
     assert "best_deals" in data
     assert "total_analyzed" in data
     assert "criteria" in data
-    
+
     # Check deals structure
     assert isinstance(data["best_deals"], list)
     if data["best_deals"]:
         deal = data["best_deals"][0]
         assert "listing" in deal
         assert "score" in deal
-        
+
         # Check score structure
         score = deal["score"]
         assert "overall_score" in score
@@ -120,7 +120,7 @@ def test_best_deals_endpoint(client: TestClient):
         assert "location_score" in score
         assert "size_score" in score
         assert "value_assessment" in score
-        
+
         # Scores should be 0-100
         assert 0 <= score["overall_score"] <= 100
         assert 0 <= score["price_score"] <= 100
@@ -131,7 +131,7 @@ def test_best_deals_with_limit(client: TestClient):
     """Test best deals with custom limit."""
     response = client.get("/market/analytics/best-deals?limit=5")
     assert response.status_code == 200
-    
+
     data = response.json()
     assert len(data["best_deals"]) <= 5
 
@@ -141,7 +141,7 @@ def test_property_score_endpoint(client: TestClient):
     # First get a listing ID
     listings_response = client.get("/market/proimobil-api/listings")
     assert listings_response.status_code == 200
-    
+
     listings_data = listings_response.json()
     if not listings_data["listings"]:
         pytest.skip("No listings available for testing")
@@ -187,7 +187,7 @@ def test_similar_properties_endpoint(client: TestClient):
     # First get a listing ID
     listings_response = client.get("/market/proimobil-api/listings")
     assert listings_response.status_code == 200
-    
+
     listings_data = listings_response.json()
     if not listings_data["listings"]:
         pytest.skip("No listings available for testing")
@@ -203,31 +203,31 @@ def test_similar_properties_endpoint(client: TestClient):
     response = client.get(f"/market/analytics/similar/{listing_id}")
     assert response.status_code == 200
 
-        data = response.json()
-        
-        # Check structure
-        assert "reference_property" in data
-        assert "similar_properties" in data
-        assert "total_found" in data
-        
-        # Check reference property
-        ref = data["reference_property"]
-        assert "id" in ref
-        assert "price_eur" in ref
-        assert "price_per_sqm" in ref
-        
-        # Check similar properties have similarity scores
-        if data["similar_properties"]:
-            similar = data["similar_properties"][0]
-            assert "similarity_score" in similar
-            assert 0 <= similar["similarity_score"] <= 100
+    data = response.json()
+
+    # Check structure
+    assert "reference_property" in data
+    assert "similar_properties" in data
+    assert "total_found" in data
+
+    # Check reference property
+    ref = data["reference_property"]
+    assert "id" in ref
+    assert "price_eur" in ref
+    assert "price_per_sqm" in ref
+
+    # Check similar properties have similarity scores
+    if data["similar_properties"]:
+        similar = data["similar_properties"][0]
+        assert "similarity_score" in similar
+        assert 0 <= similar["similarity_score"] <= 100
 
 
 def test_similar_properties_with_limit(client: TestClient):
     """Test similar properties with custom limit."""
     listings_response = client.get("/market/proimobil-api/listings")
     listings_data = listings_response.json()
-    
+
     if not listings_data["listings"]:
         pytest.skip("No listings available for testing")
 
@@ -256,11 +256,11 @@ def test_analytics_caching(client: TestClient):
     # First request
     response1 = client.get("/market/analytics/insights")
     assert response1.status_code == 200
-    
+
     # Second request should be faster (cached)
     response2 = client.get("/market/analytics/insights")
     assert response2.status_code == 200
-    
+
     # Data should be identical except for cache_info age_seconds
     data1 = response1.json()
     data2 = response2.json()
@@ -280,15 +280,15 @@ def test_sector_stats_structure(client: TestClient):
     """Test sector stats have correct structure."""
     response = client.get("/market/analytics/insights")
     assert response.status_code == 200
-    
+
     data = response.json()
     sector_stats = data["sector_stats"]
-    
+
     if sector_stats:
         # Pick first sector
         sector_name = list(sector_stats.keys())[0]
         sector_data = sector_stats[sector_name]
-        
+
         # Check structure
         assert "count" in sector_data
         assert "avg_price_eur" in sector_data
@@ -296,9 +296,8 @@ def test_sector_stats_structure(client: TestClient):
         assert "avg_price_per_sqm" in sector_data
         assert "min_price" in sector_data
         assert "max_price" in sector_data
-        
+
         # Check values are reasonable
         assert sector_data["count"] > 0
         assert sector_data["avg_price_eur"] > 0
         assert sector_data["min_price"] <= sector_data["max_price"]
-
