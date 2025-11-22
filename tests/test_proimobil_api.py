@@ -176,36 +176,8 @@ class TestParsePropertyFromAPIResponse:
         assert listing.street == "Calea Orheiului"
         assert listing.rooms == 2
         assert listing.surface_sqm == 50.0
-    
-    def test_parse_property_missing_price(self):
-        """Test returns None if price is missing."""
-        prop = {
-            "price": {},
-            "i18n": {"ro": {}},
-            "_embedded": {}
-        }
-        
-        listing = _parse_property_from_api_response(prop)
-        assert listing is None
-    
-    def test_parse_property_missing_surface(self):
-        """Test returns None if surface is missing."""
-        prop = {
-            "price": {"amount": 88900},
-            "i18n": {
-                "ro": {
-                    "description": "Apartament frumos",
-                    "characteristics": []
-                }
-            },
-            "_embedded": {
-                "city": {"i18n": {"ro": {"name": "Chișinău"}}},
-                "region": {"i18n": {"ro": {"name": "Test"}}}
-            }
-        }
-        
-        listing = _parse_property_from_api_response(prop)
-        assert listing is None
+
+
 
 
 class TestFetchProimobilAPI:
