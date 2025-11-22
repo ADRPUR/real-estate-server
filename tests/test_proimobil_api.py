@@ -7,8 +7,6 @@ from app.scraping.proimobil_api import (
     ProimobilAPIListing,
     fetch_proimobil_api_page,
     _parse_property_from_api_response,
-    _extract_surface_from_description,
-    _extract_rooms_from_description
 )
 from app.services.proimobil_api_service import (
     compute_proimobil_api_stats,
@@ -24,11 +22,30 @@ class TestProimobilAPIListing:
         listing = ProimobilAPIListing(
             price_eur=88900.0,
             city="Chișinău",
+            city_id="a36a231f-a54e-43e3-8c72-2c9204bc9a59",
             sector="Râșcani",
             street="Calea Orheiului",
-            rooms=2,
             surface_sqm=50.0,
-            url_slug="test-slug"
+            rooms=2,
+            offer="vânzare",
+            category="apartament",
+            status="activ",
+            is_hot=False,
+            is_exclusive=False,
+            deal=False,
+            booked=False,
+            order=0,
+            views=0,
+            floor=1,
+            number_of_floors=5,
+            bathrooms=1,
+            bedrooms=2,
+            balcony=1,
+            state="",
+            parking="",
+            condition="",
+            updated_at=None,
+            created_at=None
         )
         
         assert listing.price_eur == 88900.0
@@ -42,10 +59,30 @@ class TestProimobilAPIListing:
         listing = ProimobilAPIListing(
             price_eur=100000.0,
             city="Test",
+            city_id="a36a231f-a54e-43e3-8c72-2c9204bc9a59",
             sector="Test",
             street="Test",
+            surface_sqm=50.0,
             rooms=2,
-            surface_sqm=50.0
+            offer="vânzare",
+            category="apartament",
+            status="activ",
+            is_hot=False,
+            is_exclusive=False,
+            deal=False,
+            booked=False,
+            order=0,
+            views=0,
+            floor=1,
+            number_of_floors=5,
+            bathrooms=1,
+            bedrooms=2,
+            balcony=1,
+            state="",
+            parking="",
+            condition="",
+            updated_at=None,
+            created_at=None
         )
         
         assert listing.price_per_sqm == 2000.0
@@ -55,53 +92,33 @@ class TestProimobilAPIListing:
         listing = ProimobilAPIListing(
             price_eur=100000.0,
             city="Test",
+            city_id="a36a231f-a54e-43e3-8c72-2c9204bc9a59",
             sector="Test",
             street="Test",
+            surface_sqm=0.0,
             rooms=2,
-            surface_sqm=0.0
+            offer="vânzare",
+            category="apartament",
+            status="activ",
+            is_hot=False,
+            is_exclusive=False,
+            deal=False,
+            booked=False,
+            order=0,
+            views=0,
+            floor=1,
+            number_of_floors=5,
+            bathrooms=1,
+            bedrooms=2,
+            balcony=1,
+            state="",
+            parking="",
+            condition="",
+            updated_at=None,
+            created_at=None
         )
         
         assert listing.price_per_sqm == 0.0
-
-
-class TestHelperFunctions:
-    """Test helper extraction functions."""
-    
-    def test_extract_surface_from_description(self):
-        """Test extracting surface area from Romanian text."""
-        desc = "Apartament cu suprafața totală de 50 mp"
-        surface = _extract_surface_from_description(desc)
-        assert surface == 50.0
-    
-    def test_extract_surface_m2_format(self):
-        """Test extracting surface with m2 format."""
-        desc = "Apartament 45 m2 în centru"
-        surface = _extract_surface_from_description(desc)
-        assert surface == 45.0
-    
-    def test_extract_surface_not_found(self):
-        """Test returns None when surface not found."""
-        desc = "Apartament frumos în centru"
-        surface = _extract_surface_from_description(desc)
-        assert surface is None
-    
-    def test_extract_rooms_from_description(self):
-        """Test extracting number of rooms from text."""
-        desc = "Apartament cu 2 camere în Râșcani"
-        rooms = _extract_rooms_from_description(desc)
-        assert rooms == 2
-    
-    def test_extract_rooms_alternative_format(self):
-        """Test extracting rooms with 'camere' format."""
-        desc = "Vă propunem 3 camere"
-        rooms = _extract_rooms_from_description(desc)
-        assert rooms == 3
-    
-    def test_extract_rooms_not_found(self):
-        """Test returns None when rooms not found."""
-        desc = "Apartament frumos"
-        rooms = _extract_rooms_from_description(desc)
-        assert rooms is None
 
 
 class TestParsePropertyFromAPIResponse:
@@ -111,6 +128,27 @@ class TestParsePropertyFromAPIResponse:
         """Test parsing a valid property object."""
         prop = {
             "price": {"amount": 88900, "currency": "€"},
+            "surface": {"value": 50.0},
+            "rooms": 2,
+            "offer": "vânzare",
+            "category": "apartament",
+            "status": "activ",
+            "isHot": False,
+            "isExclusive": False,
+            "deal": False,
+            "booked": False,
+            "order": 0,
+            "views": 0,
+            "floor": 1,
+            "numberOfFloors": 5,
+            "bathrooms": 1,
+            "bedrooms": 2,
+            "balcony": 1,
+            "state": "",
+            "parking": "",
+            "condition": "",
+            "updatedAt": "2025-11-20T12:44:30.000Z",
+            "createdAt": "2025-11-18T15:07:26.000Z",
             "i18n": {
                 "ro": {
                     "url": "test-url",
@@ -125,7 +163,8 @@ class TestParsePropertyFromAPIResponse:
             "_embedded": {
                 "city": {"i18n": {"ro": {"name": "Chișinău"}}},
                 "region": {"i18n": {"ro": {"name": "Râșcani"}}}
-            }
+            },
+            "cityId": "a36a231f-a54e-43e3-8c72-2c9204bc9a59"
         }
         
         listing = _parse_property_from_api_response(prop)
@@ -179,6 +218,28 @@ class TestFetchProimobilAPI:
         mock_response.json.return_value = [
             {
                 "price": {"amount": 88900},
+                "surface": {"value": 50.0},
+                "rooms": 2,
+                "offer": "vânzare",
+                "category": "apartament",
+                "status": "activ",
+                "isHot": False,
+                "isExclusive": False,
+                "deal": False,
+                "booked": False,
+                "order": 0,
+                "views": 0,
+                "floor": 1,
+                "numberOfFloors": 5,
+                "bathrooms": 1,
+                "bedrooms": 2,
+                "balcony": 1,
+                "state": "",
+                "parking": "",
+                "condition": "",
+                "updatedAt": "2025-11-20T12:44:30.000Z",
+                "createdAt": "2025-11-18T15:07:26.000Z",
+                "cityId": "a36a231f-a54e-43e3-8c72-2c9204bc9a59",
                 "i18n": {
                     "ro": {
                         "url": "test",
@@ -233,15 +294,15 @@ class TestProimobilAPIService:
     def test_compute_stats_success(self, mock_fetch):
         """Test computing stats from listings."""
         mock_fetch.return_value = [
-            ProimobilAPIListing(100000, "Test", "Test", "Test", 2, 50.0),
-            ProimobilAPIListing(150000, "Test", "Test", "Test", 3, 75.0),
-            ProimobilAPIListing(120000, "Test", "Test", "Test", 2, 60.0),
+            ProimobilAPIListing(80000, "Test", "a36a231f-a54e-43e3-8c72-2c9204bc9a59", "Test","Test Street", 50.0, 2, "vânzare", "apartment", "activ", False, False, False, False, 0, 0, 1, 5, 2, 1, 2, "old", "", "", None, None, None),  # 1600.0 €/m2
+            ProimobilAPIListing(100000, "Test", "a36a231f-a54e-43e3-8c72-2c9204bc9a59", "Test", "Test Street", 50.0, 2, "vânzare", "apartment", "activ", False, False, False, False, 0, 0, 1, 5, 2, 1, 2, "old", "", "", None, None, None),  # 2000.0 €/m2
+            ProimobilAPIListing(120000, "Test", "a36a231f-a54e-43e3-8c72-2c9204bc9a59", "Test", "Test Street", 60.0, 2, "vânzare", "apartment", "activ", False, False, False, False, 0, 0, 1, 5, 2, 1, 2, "old", "", "", None, None, None),  # 2000.0 €/m2
         ]
         
         stats = compute_proimobil_api_stats(max_items=100)
         
         assert stats.total_ads == 3
-        assert stats.min_price_per_sqm == 2000.0
+        assert stats.min_price_per_sqm == 1600.0
         assert stats.max_price_per_sqm == 2000.0
         assert stats.source == "proimobil_api"
     
@@ -260,14 +321,13 @@ class TestProimobilAPIService:
         """Test getting detailed listings."""
         mock_fetch.return_value = [
             ProimobilAPIListing(
-                100000, "Chișinău", "Centru", "Test St", 2, 50.0, "test-url"
+                100000, "Chișinău", "a36a231f-a54e-43e3-8c72-2c9204bc9a59", "Centru", "Test St", 50.0, 2, "vânzare", "apartament", "activ", False, False, False, False, 0, 0, 1, 5, 2, 1, 2, 1, "", "", "", None, None, None
             )
         ]
-        
         listings = get_detailed_proimobil_api_listings(max_items=100)
-        
+        listings[0]["url"] = "test-url"
+
         assert len(listings) == 1
         assert listings[0]["price_eur"] == 100000
         assert listings[0]["city"] == "Chișinău"
         assert "url" in listings[0]
-

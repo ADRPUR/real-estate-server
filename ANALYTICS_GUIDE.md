@@ -96,8 +96,14 @@ Get a comprehensive investment score (0-100) for any property.
 
 **Example Request**:
 ```bash
+# Using ID
+curl http://localhost:8000/market/analytics/property-score/12345
+
+# Or using URL slug
 curl http://localhost:8000/market/analytics/property-score/apartament-cu-2-odai-de-vanzare-in-chisinau-botanica
 ```
+
+**Note**: You can use either the `id` or `url_slug` from `/market/proimobil-api/listings` response.
 
 **Example Response**:
 ```json

@@ -86,6 +86,8 @@ class ListingItem(BaseModel):
     url: Optional[str] = Field(None, description="Listing URL")
     location: Optional[str] = Field(None, description="Property location")
     rooms: Optional[int] = Field(None, description="Number of rooms")
+    updated_at: Optional[str] = Field(None, description="Last update date (ISO 8601)")
+    created_at: Optional[str] = Field(None, description="Creation date (ISO 8601)")
 
 
 class ListingsResponse(BaseModel):
@@ -95,4 +97,3 @@ class ListingsResponse(BaseModel):
     total: int = Field(..., description="Total number of listings")
     listings: List[ListingItem] = Field(..., description="List of listings")
     cached: bool = Field(False, description="Whether data was served from cache")
-

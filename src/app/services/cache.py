@@ -250,12 +250,12 @@ class MarketDataScheduler:
                 from app.services.proimobil_api_service import get_detailed_proimobil_api_listings
 
                 # Refresh stats
-                proimobil_stats = compute_proimobil_api_stats(max_items=500)
+                proimobil_stats = compute_proimobil_api_stats(max_items=1000)
                 self.cache.set('proimobil_api', asdict(proimobil_stats), source='scheduler')
                 logger.info(f"✓ Proimobil API stats: {proimobil_stats.total_ads} ads")
 
                 # Refresh detailed listings
-                proimobil_listings = get_detailed_proimobil_api_listings(max_items=500)
+                proimobil_listings = get_detailed_proimobil_api_listings(max_items=1000)
                 listings_data = {
                     "total": len(proimobil_listings),
                     "listings": proimobil_listings

@@ -140,15 +140,34 @@ def get_detailed_proimobil_api_listings(max_items: int = None) -> List[Dict[str,
 
     return [
         {
+            "id": listing.listing_id,
+            "offer": listing.offer,
+            "category": listing.category,
+            "status": listing.status,
+            "is_hot": listing.is_hot,
+            "is_exclusive": listing.is_exclusive,
+            "deal": listing.deal,
+            "booked": listing.booked,
+            "order": listing.order,
+            "views": listing.views,
+            "bathrooms": listing.bathrooms,
+            "bedrooms": listing.bedrooms,
+            "balcony": listing.balcony,
+            "state": listing.state,
+            "parking": listing.parking,
             "price_eur": listing.price_eur,
             "price_per_sqm": round(listing.price_per_sqm, 2),
             "city": listing.city,
+            "city_id": listing.city_id,
             "sector": listing.sector,
             "street": listing.street,
             "rooms": listing.rooms,
             "surface_sqm": listing.surface_sqm,
-            "url": f"https://proimobil.md/{listing.url_slug}" if listing.url_slug else None
+            "condition": listing.condition,
+            "floor": listing.floor,
+            "number_of_floors": listing.number_of_floors,
+            "updated_at": listing.updated_at.isoformat() if listing.updated_at else None,
+            "created_at": listing.created_at.isoformat() if listing.created_at else None,
         }
         for listing in listings
     ]
-

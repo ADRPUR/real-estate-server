@@ -146,9 +146,9 @@ def test_property_score_endpoint(client: TestClient):
     if not listings_data["listings"]:
         pytest.skip("No listings available for testing")
 
-    # Use ID first, fallback to url_slug
+    # Use ID first
     listing = listings_data["listings"][0]
-    listing_id = listing.get("id") or listing.get("url_slug")
+    listing_id = listing.get("id")
 
     if not listing_id:
         pytest.skip("No valid ID found in listing")
@@ -192,9 +192,9 @@ def test_similar_properties_endpoint(client: TestClient):
     if not listings_data["listings"]:
         pytest.skip("No listings available for testing")
 
-    # Use ID first, fallback to url_slug
+    # Use ID first
     listing = listings_data["listings"][0]
-    listing_id = listing.get("id") or listing.get("url_slug")
+    listing_id = listing.get("id")
 
     if not listing_id:
         pytest.skip("No valid ID found in listing")
@@ -231,9 +231,9 @@ def test_similar_properties_with_limit(client: TestClient):
     if not listings_data["listings"]:
         pytest.skip("No listings available for testing")
 
-    # Use ID first, fallback to url_slug
+    # Use ID first
     listing = listings_data["listings"][0]
-    listing_id = listing.get("id") or listing.get("url_slug")
+    listing_id = listing.get("id")
 
     if not listing_id:
         pytest.skip("No valid ID found in listing")
