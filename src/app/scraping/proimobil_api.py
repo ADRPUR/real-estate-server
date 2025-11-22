@@ -4,10 +4,10 @@ Uses the official proimobil.md API endpoint: https://api.proimobil.md/v1/propert
 """
 
 import logging
-import re
 from typing import List, Dict, Any, Optional
 import requests
 import urllib3
+from datetime import datetime
 
 # Suppress SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -22,77 +22,68 @@ class ProimobilAPIListing:
         self,
         price_eur: float,
         city: str,
+        city_id: str,
         sector: str,
         street: str,
-        rooms: int,
         surface_sqm: float,
-        url_slug: Optional[str] = None
+        rooms: int,
+        offer: str,
+        category: str,
+        status: str,
+        is_hot: bool,
+        is_exclusive: bool,
+        deal: bool,
+        booked: bool,
+        order: int,
+        views: int,
+        floor: int,
+        number_of_floors: int,
+        bathrooms: int,
+        bedrooms: int,
+        balcony: int,
+        state: str,
+        parking: str,
+        condition: str,
+        updated_at: Optional[datetime],
+        created_at: Optional[datetime],
+        listing_id: Optional[str] = None,
+        url: Optional[str] = None,
     ):
         self.price_eur = price_eur
         self.city = city
+        self.city_id = city_id
         self.sector = sector
         self.street = street
         self.rooms = rooms
         self.surface_sqm = surface_sqm
-        self.url_slug = url_slug
         self.price_per_sqm = price_eur / surface_sqm if surface_sqm > 0 else 0.0
-    
+        self.listing_id = listing_id
+        self.offer = offer
+        self.category = category
+        self.status = status
+        self.is_hot = is_hot
+        self.is_exclusive = is_exclusive
+        self.deal = deal
+        self.booked = booked
+        self.order = order
+        self.views = views
+        self.floor = floor
+        self.number_of_floors = number_of_floors
+        self.bathrooms = bathrooms
+        self.bedrooms = bedrooms
+        self.balcony = balcony
+        self.state = state
+        self.parking = parking
+        self.condition = condition
+        self.updated_at = updated_at
+        self.created_at = created_at
+        self.url = url
+
     def __repr__(self):
         return (f"ProimobilAPIListing(price={self.price_eur}€, "
                 f"city={self.city}, sector={self.sector}, street={self.street}, "
                 f"rooms={self.rooms}, surface={self.surface_sqm}m², "
                 f"€/m²={self.price_per_sqm:.2f})")
-
-
-def _extract_surface_from_description(description: str) -> Optional[float]:
-    """
-    Extract surface area from Romanian description text.
-    Looks for patterns like "50 mp", "50 m2", "50mp", etc.
-    """
-    if not description:
-        return None
-    
-    # Try to find "suprafața totală de X mp" or "suprafața totală de X m2"
-    patterns = [
-        r'suprafața\s+totală\s+de\s+(\d+(?:[.,]\d+)?)\s*(?:mp|m2|m²)',
-        r'suprafata\s+totala\s+de\s+(\d+(?:[.,]\d+)?)\s*(?:mp|m2|m²)',
-        r'(\d+(?:[.,]\d+)?)\s*(?:mp|m2|m²)',  # Generic pattern as fallback
-    ]
-    
-    for pattern in patterns:
-        match = re.search(pattern, description, re.IGNORECASE)
-        if match:
-            surface_str = match.group(1).replace(',', '.')
-            try:
-                return float(surface_str)
-            except ValueError:
-                continue
-    
-    return None
-
-
-def _extract_rooms_from_description(description: str) -> Optional[int]:
-    """
-    Extract number of rooms from Romanian description text.
-    Looks for patterns like "2 camere", "cu 2 camere", etc.
-    """
-    if not description:
-        return None
-    
-    patterns = [
-        r'(?:cu\s+)?(\d+)\s+(?:camere|camera)',
-        r'apartament\s+cu\s+(\d+)\s+(?:camere|camera)',
-    ]
-    
-    for pattern in patterns:
-        match = re.search(pattern, description, re.IGNORECASE)
-        if match:
-            try:
-                return int(match.group(1))
-            except ValueError:
-                continue
-    
-    return None
 
 
 def _parse_property_from_api_response(prop: Dict[str, Any]) -> Optional[ProimobilAPIListing]:
@@ -103,71 +94,105 @@ def _parse_property_from_api_response(prop: Dict[str, Any]) -> Optional[Proimobi
         prop: Property dictionary from API response
     
     Returns:
-        ProimobilAPIListing object or None if required data is missing
+        ProimobilAPIListing object (nu mai returnează None, pune valori default)
     """
     try:
+        # Extract listing ID
+        listing_id = prop.get("id", "")
+
+        # Extract city ID (poate lipsi)
+        city_id = prop.get("cityId", "")
+
         # Extract price
         price_obj = prop.get("price", {})
-        price_eur = price_obj.get("amount")
-        if not price_eur:
-            return None
-        
+        price_eur = price_obj.get("amount", 0.0)
+
         # Extract i18n data (Romanian language)
         i18n_ro = prop.get("i18n", {}).get("ro", {})
-        description = i18n_ro.get("description", "")
         street = i18n_ro.get("address", "")
-        url_slug = i18n_ro.get("url", "")
-        
-        # Extract surface from characteristics or description
-        characteristics = i18n_ro.get("characteristics", [])
-        surface_sqm = None
-        rooms = None
-        
-        for char in characteristics:
-            name = char.get("name", "")
-            value = char.get("value", "")
-            
-            if "Suprafața totală" in name or "Suprafata totala" in name:
-                # Extract number from "50 m2" or "50 mp"
-                match = re.search(r'(\d+(?:[.,]\d+)?)', value)
-                if match:
-                    surface_sqm = float(match.group(1).replace(',', '.'))
-            
-            elif "Camere" in name:
-                # Extract number of rooms
-                match = re.search(r'(\d+)', value)
-                if match:
-                    rooms = int(match.group(1))
-        
-        # Fallback: extract from description if not in characteristics
-        if surface_sqm is None:
-            surface_sqm = _extract_surface_from_description(description)
-        
-        if rooms is None:
-            rooms = _extract_rooms_from_description(description)
-        
-        # Check if we have minimum required data
-        if surface_sqm is None or surface_sqm == 0:
-            return None
-        
+
+        # Extract surface
+        surface_obj = prop.get("surface", {})
+        surface_sqm = surface_obj.get("value", 0.0)
+
+        # Extract rooms
+        rooms = prop.get("rooms", 0)
+
+        # Extract offer
+        offer = prop.get("offer", "")
+
+        # Extract category
+        category = prop.get("category", "")
+
+        # Extract status
+        status = prop.get("status", "")
+
+        # Extract other fields with defaults
+        is_hot = prop.get("isHot", False)
+        is_exclusive = prop.get("isExclusive", False)
+        deal = prop.get("deal", False)
+        booked = prop.get("booked", False)
+        order = prop.get("order", 0)
+        views = prop.get("views", 0)
+        floor = prop.get("floor", 0)
+        number_of_floors = prop.get("numberOfFloors", 0)
+        bathrooms = prop.get("bathrooms", 0)
+        bedrooms = prop.get("bedrooms", 0)
+        balcony = prop.get("balcony", 0)
+        state = prop.get("state", "")
+        parking = prop.get("parking", "")
+        condition = prop.get("condition", "")
+        updated_at_str = prop.get("updatedAt", "")
+        created_at_str = prop.get("createdAt", "")
+        updated_at = None
+        created_at = None
+        if updated_at_str:
+            try:
+                updated_at = datetime.fromisoformat(updated_at_str.replace("Z", "+00:00"))
+            except Exception:
+                updated_at = None
+        if created_at_str:
+            try:
+                created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
+            except Exception:
+                created_at = None
+
         # Extract city and region from _embedded
         embedded = prop.get("_embedded", {})
         city_obj = embedded.get("city", {})
         region_obj = embedded.get("region", {})
-        
         city = city_obj.get("i18n", {}).get("ro", {}).get("name", "")
         sector = region_obj.get("i18n", {}).get("ro", {}).get("name", "")
-        
+
         return ProimobilAPIListing(
-            price_eur=float(price_eur),
+            price_eur=float(price_eur) if price_eur else 0.0,
             city=city,
+            city_id=city_id,
             sector=sector,
             street=street,
             rooms=rooms if rooms else 0,
-            surface_sqm=surface_sqm,
-            url_slug=url_slug
+            surface_sqm=surface_sqm if surface_sqm else 0.0,
+            offer=offer,
+            category=category,
+            status=status,
+            is_hot=is_hot,
+            is_exclusive=is_exclusive,
+            deal=deal,
+            booked=booked,
+            order=order,
+            views=views,
+            floor=floor,
+            number_of_floors=number_of_floors,
+            bathrooms=bathrooms,
+            bedrooms=bedrooms,
+            balcony=balcony,
+            state=state,
+            parking=parking,
+            condition=condition,
+            updated_at=updated_at,
+            created_at=created_at,
+            listing_id=str(listing_id) if listing_id else None
         )
-        
     except Exception as e:
         logger.debug(f"Failed to parse property: {e}")
         return None
@@ -175,8 +200,8 @@ def _parse_property_from_api_response(prop: Dict[str, Any]) -> Optional[Proimobi
 
 def _extract_listings_from_api_response(data: List[Dict[str, Any]]) -> List[ProimobilAPIListing]:
     """
-    Extract all valid listings from API response array.
-    
+    Extract all valid listings from API response array, filtrand doar cele din Chisinau (cityId specificat).
+
     Args:
         data: Array of property objects from API
     
@@ -249,7 +274,7 @@ def fetch_proimobil_api_page(offset: int = 0, limit: int = 150) -> List[Proimobi
         return []
 
 
-def fetch_all_proimobil_api_listings(max_items: int = 500) -> List[ProimobilAPIListing]:
+def fetch_all_proimobil_api_listings(max_items: int = 1000) -> List[ProimobilAPIListing]:
     """
     Fetch all available listings from proimobil.md API.
     
@@ -262,6 +287,7 @@ def fetch_all_proimobil_api_listings(max_items: int = 500) -> List[ProimobilAPIL
     all_listings = []
     offset = 0
     batch_size = 150  # API maximum
+
     
     while offset < max_items:
         # Fetch one batch
@@ -279,12 +305,15 @@ def fetch_all_proimobil_api_listings(max_items: int = 500) -> List[ProimobilAPIL
             break
         
         offset += batch_size
-    
+
+    # Filtrare doar anunțuri din Chișinău și cu offer = 'sell'
+    chisinau_city_id = "a36a231f-a54e-43e3-8c72-2c9204bc9a59"
+    all_listings = [listing for listing in all_listings if (getattr(listing, 'cityId', None) == chisinau_city_id or getattr(listing, 'city_id', None) == chisinau_city_id) and getattr(listing, 'offer', None) == 'sell']
     logger.info(f"Total listings fetched from proimobil API: {len(all_listings)}")
     return all_listings
 
 
-def get_proimobil_api_prices(max_items: int = 500) -> List[float]:
+def get_proimobil_api_prices(max_items: int = 1000) -> List[float]:
     """
     Get all price-per-sqm values from proimobil API.
     
@@ -297,4 +326,3 @@ def get_proimobil_api_prices(max_items: int = 500) -> List[float]:
     listings = fetch_all_proimobil_api_listings(max_items)
     prices = [listing.price_per_sqm for listing in listings if listing.price_per_sqm > 0]
     return prices
-
